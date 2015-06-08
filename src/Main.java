@@ -7,7 +7,6 @@ public class Main {
 		String formula = args[0];
 
 		TruthTable table = new TruthTable(formula);
-		table.calculateTable();
 		table.printTable();
 		
 	}
