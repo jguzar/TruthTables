@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -6,20 +7,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * RegExp1: (\(?[-]?([A-Z]|[a-z]){1}[&|>]{1}[-]?([A-Z]|[a-z]){1}\)?) RegExp2:
+ * RegExp1: (\(?[-]?([A-Z]|[a-z]){1}[&|>]{1}[-]?([A-Z]|[a-z]){1}\)?) 
+ * RegExp2:
  * ([-]{1}([A-Z]|[a-z]){1})
+ * 
+ * New valid connectors: 	∼	∧	∨	→	↔
  * */
 public class TruthTable {
 
-	private String regexp1 = "([-]{1}([A-Z]|[a-z]){1})";
-	private String regexp2 = "(\\(?[-]?([A-Z]|[a-z]){1}[&|>]{1}[-]?([A-Z]|[a-z]){1}\\)?)";
+	private String regexp1 = "([∼]{1}([A-Z]|[a-z]){1})";
+	private String regexp2 = "(\\(?[∼]?([A-Z]|[a-z]){1}[∧∨→↔]{1}[∼]?([A-Z]|[a-z]){1}\\)?)";
 	private String formula;
-	private Character[] aux_connectors = { '&', '|', '>', '-' };
+	private Character[] aux_connectors = { '∧', '∨', '→', '∼', '↔' };
 	private Character[] aux_symbols = { '(', ')' };
 	private final ArrayList<Character> valid_connectors = new ArrayList<Character>();
 	private final ArrayList<Character> symbols = new ArrayList<Character>();
 	private ArrayList<Character> variables = new ArrayList<Character>();
 	private HashMap<String, ArrayList<Integer>> result = new HashMap<String, ArrayList<Integer>>();
+	private HashMap<String, ArrayList<Integer>> clean_result = new HashMap<String, ArrayList<Integer>>();
 	private Character current_char = 'a';
 	private HashMap<String, String> aux_vars = new HashMap<String, String>();
 	private String key_final_result;
@@ -53,7 +58,7 @@ public class TruthTable {
 				sb = new StringBuffer();
 
 				String value_founded = m.group(0);
-				String[] value_founded_arr = value_founded.split("-");
+				String[] value_founded_arr = value_founded.split("∼");
 
 				ArrayList<Integer> group_result = new ArrayList<Integer>();
 
@@ -103,9 +108,9 @@ public class TruthTable {
 						char_operation = this.aux_connectors[i];
 
 						String str = "";
-						if (char_operation == '|') {
-							str = "\\";
-						}
+//						if (char_operation == '∨') {
+//							str = "\\";
+//						}
 
 						value_founded_arr = value_founded_clean.split(str
 								+ String.valueOf(this.aux_connectors[i]));
@@ -135,13 +140,14 @@ public class TruthTable {
 				for (int i = 0; i < element1.size(); i++) {
 					int val = 0;
 
-					if (char_operation == '&') {
+					if (char_operation == '∧') {
 						val = element1.get(i) & element2.get(i);
-					} else if (char_operation == '|') {
+					} else if (char_operation == '∨') {
 						val = element1.get(i) | element2.get(i);
-					} else if (char_operation == '>') {
-						val = this
-								.conditional(element1.get(i), element2.get(i));
+					} else if (char_operation == '→') {
+						val = this.conditional(element1.get(i), element2.get(i));
+					} else if (char_operation == '↔') {
+						val = this.biconditional(element1.get(i), element2.get(i));
 					}
 
 					group_result.add(val);
@@ -168,6 +174,7 @@ public class TruthTable {
 	}
 
 	private void setVariables(String formula) {
+		
 		char[] form = formula.toCharArray();
 		for (int i = 0; i < form.length; i++) {
 			if (!this.valid_connectors.contains(form[i])
@@ -178,6 +185,9 @@ public class TruthTable {
 						new ArrayList<Integer>());
 			}
 		}
+		
+		Collections.sort(this.variables);
+		//System.out.println(this.variables);
 
 		int[] values = new int[this.variables.size()];
 		for (int i = 0; i < values.length; i++)
@@ -221,10 +231,18 @@ public class TruthTable {
 		while (it.hasNext()) {
 			Map.Entry pair = (Map.Entry) it.next();
 
-			header.append(pair.getKey());
-			header.append("\t");
-
-			keys.add((String) pair.getKey());
+			//System.out.println("key_final_result: "+key_final_result);
+			//System.out.println("pair.getKey(): "+pair.getKey().toString());
+			
+			//Con este if evitamos que se impriman los resultados parciales
+			if((pair.getKey().toString().length() == 1 && this.variables.contains(pair.getKey().toString().charAt(0))) || pair.getKey().equals(key_final_result)){
+				header.append(pair.getKey().equals(key_final_result)?this.formula:pair.getKey());
+				header.append("\t");
+	
+				this.clean_result.put(pair.getKey().equals(key_final_result)?this.formula:pair.getKey().toString(), (ArrayList<Integer>) pair.getValue());
+				
+				keys.add((String) pair.getKey());
+			}
 		}
 
 		for (int i = 0; i < this.result.get(keys.get(0)).size(); i++) {
@@ -241,6 +259,9 @@ public class TruthTable {
 		this.getKindOfProposition();
 		System.out.println(header);
 		System.out.println(body);
+		
+		// Las siguientes líneas imprimen las referencias a resultados parciales
+		/*
 		System.out.println("Referencias:");
 
 		it = this.aux_vars.entrySet().iterator();
@@ -254,7 +275,14 @@ public class TruthTable {
 
 			System.out.println(pair.getKey() + " = " + pair.getValue() + R);
 		}
-
+		*/
+		
+		//System.out.println(this.clean_result);
+		//System.out.println(this.result);
+	}
+	
+	public HashMap<String, ArrayList<Integer>> getResult(){
+		return this.clean_result;
 	}
 
 	private int not(int x) {
@@ -275,9 +303,20 @@ public class TruthTable {
 		}
 		return r;
 	}
+	
+	private int biconditional(int x, int y) {
+		int r = 0;
+		if (x != y) {
+			r = 0;
+		} else if(x == y){
+			r = 1;
+		}
+		return r;
+	}
 
 	void getKindOfProposition() {
 		int true_counter = 0;
+		if(this.result.size() == 1) key_final_result=this.variables.get(0).toString();
 		for (int i = 0; i < this.result.get(key_final_result).size(); i++) {
 			if (this.result.get(key_final_result).get(i) == 1) {
 				true_counter++;
