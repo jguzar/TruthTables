@@ -165,8 +165,28 @@ public class TruthTable {
 				this.current_char++;
 				formula = sb.toString();
 				m = p.matcher(formula);
+				break;
 			}
 
+			/*************************************************/
+			p = Pattern.compile("([\\(]{1}([A-Z]|[a-z]){1}[\\)]{1})"); //Matches (x)
+			m = p.matcher(formula);
+
+			while (m.find()) {
+				sb = new StringBuffer();
+
+				String value_founded = m.group(0);
+
+				m.appendReplacement(sb, Matcher.quoteReplacement(String
+						.valueOf(value_founded.replace("(", "").replace(")", ""))));
+				
+				m.appendTail(sb);
+
+				formula = sb.toString();
+				m = p.matcher(formula);
+			}
+			/*************************************************/
+			
 			this.processFormula(formula);
 			// form = formula.toCharArray();
 
