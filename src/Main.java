@@ -21,7 +21,7 @@ public class Main {
 			formula += "(";
 			for (int i = 0; i < args.length-1; i++) {
 				if(args[i].length()>1){
-					if(args[i].length() == 2 && args[i].charAt(0) == '∼'){
+					if(args[i].length() == 2 && args[i].charAt(0) == '-'){
 						formula += args[i];
 					}else{
 						formula += "("+args[i]+")";
@@ -31,19 +31,19 @@ public class Main {
 				}
 				
 				if(i<args.length-2){
-					formula+="∧";
+					formula+="&";
 				}
 			}
 			String conclusion = args[args.length-1];
 			
 			if(conclusion.length()>1){
-				if(conclusion.length() == 2 && conclusion.charAt(0) == '∼'){
-					formula+=")→"+conclusion;
+				if(conclusion.length() == 2 && conclusion.charAt(0) == '-'){
+					formula+=")>"+conclusion;
 				}else{
-					formula+=")→("+conclusion+")";
+					formula+=")>("+conclusion+")";
 				}
 			}else{
-				formula+=")→"+conclusion;
+				formula+=")>"+conclusion;
 			}
 			
 			TruthTable table = new TruthTable(formula);

@@ -15,10 +15,10 @@ import java.util.regex.Pattern;
  * */
 public class TruthTable {
 
-	private String regexp1 = "([∼]{1}([A-Z]|[a-z]){1})";
-	private String regexp2 = "(\\(?[∼]?([A-Z]|[a-z]){1}[∧∨→↔]{1}[∼]?([A-Z]|[a-z]){1}\\)?)";
+	private String regexp1 = "([-]{1}([A-Z]|[a-z]){1})";
+	private String regexp2 = "(\\(?[-]?([A-Z]|[a-z]){1}[&|><]{1}[-]?([A-Z]|[a-z]){1}\\)?)";
 	private String formula;
-	private Character[] aux_connectors = { '∧', '∨', '→', '∼', '↔' };
+	private Character[] aux_connectors = { '&', '|', '>', '-', '<' };
 	private Character[] aux_symbols = { '(', ')' };
 	private final ArrayList<Character> valid_connectors = new ArrayList<Character>();
 	private final ArrayList<Character> symbols = new ArrayList<Character>();
@@ -58,7 +58,7 @@ public class TruthTable {
 				sb = new StringBuffer();
 
 				String value_founded = m.group(0);
-				String[] value_founded_arr = value_founded.split("∼");
+				String[] value_founded_arr = value_founded.split("-");
 
 				ArrayList<Integer> group_result = new ArrayList<Integer>();
 
@@ -108,9 +108,9 @@ public class TruthTable {
 						char_operation = this.aux_connectors[i];
 
 						String str = "";
-//						if (char_operation == '∨') {
-//							str = "\\";
-//						}
+						if (char_operation == '|') {
+							str = "\\";
+						}
 
 						value_founded_arr = value_founded_clean.split(str
 								+ String.valueOf(this.aux_connectors[i]));
@@ -140,13 +140,13 @@ public class TruthTable {
 				for (int i = 0; i < element1.size(); i++) {
 					int val = 0;
 
-					if (char_operation == '∧') {
+					if (char_operation == '&') {
 						val = element1.get(i) & element2.get(i);
-					} else if (char_operation == '∨') {
+					} else if (char_operation == '|') {
 						val = element1.get(i) | element2.get(i);
-					} else if (char_operation == '→') {
+					} else if (char_operation == '>') {
 						val = this.conditional(element1.get(i), element2.get(i));
-					} else if (char_operation == '↔') {
+					} else if (char_operation == '<') {
 						val = this.biconditional(element1.get(i), element2.get(i));
 					}
 
